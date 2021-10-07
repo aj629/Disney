@@ -41,7 +41,7 @@
                                 .attr("transform","translate("+margin.left+","+margin.top+")");
 
             // making a dictionary to label the months in abbreviations instead of letters
-            const monthsDict = {1: Jan, 2: Feb, 3: Mar, 4: Apr, 5: May, 6: Jun, 7: Jul, 8: Aug, 9: Sep, 10: Oct, 11: Nov, 12: Dec};
+            const monthsDict = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'};
 
         // removing empty values for the box office/budget data set. I removed empty values for the budget, box office, title, and release date
         d3.csv('../disney.csv').then( (data) => {
@@ -55,9 +55,9 @@
             data.forEach( (d, i) => {
                 d['Box office (float)'] = Number( d['Box office (float)']);
                 d['Release date (datetime)'] = d['Release date (datetime)'].split("-");
-                d['month'] = monthsDict(Number(d['Release date (datetime)'][1]));
+                d['monthNum'] = Number(d['Release date (datetime)'][1]);
+                d['month'] = monthsDict[d['monthNum']];
             })
-            console.log(data);
 
 
             // removing box office values that were unreasonably low (some values were less than 200, which did not make sense)
@@ -70,22 +70,40 @@
             console.log(boxExtent);
             const boxScale = d3.scaleLinear().domain(boxExtent).range([chartHeight, margin.bottom]);
 
-            
+            // const months = d3.map(data, d => d.month)
+            // console.log(months);
+            const monthScale = d3.scalePoint().domain(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']).range([margin.left, chartWidth]).padding(0.1);
 
 
             // making axes and gridlines
             let leftAxis = d3.axisLeft(boxScale).tickFormat("");
             let leftGridlines = d3.axisLeft(boxScale)
-                                    .tickSize(-chartWidth-10)
+                                    .tickSize(-chartWidth-5)
                                     .tickFormat(d3.format("~f"));
+
+            labels.append("g")
+                .attr("class", "y gridlines")
+                .attr("transform","translate("+(margin.left-10)+","+margin.top+")")
+                .call(leftGridlines);
             labels.append("g")
                 .attr("class", "y axis")
                 .attr("transform","translate("+(margin.left)+","+margin.top+")")
                 .call(leftAxis)
+
+
+
+            let bottomAxis = d3.axisBottom(monthScale).tickFormat("");
+            let bottomGridlines = d3.axisBottom(monthScale).tickSize(-chartHeight-10);
+              
             labels.append("g")
-                .attr("class", "y gridlines")
-                .attr("transform","translate("+(margin.left)+","+margin.top+")")
-                .call(leftGridlines);
+                    .attr("class", "x gridlines")
+                    .attr("transform","translate("+0+","+(chartHeight+margin.top+10)+")")
+                    .call(bottomGridlines);
+            labels.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform","translate("+0+","+(chartHeight+margin.top)+")")
+                    .call(bottomAxis);
+
 
  
         });
