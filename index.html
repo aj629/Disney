@@ -190,32 +190,39 @@
                     .attr('text', 'release month');
 
             const legendRows = {first: 20, second: 50, third: 80};
-            const legendCols = {first: margin.left, second: margin.left + 130, third: margin.left + 300, fourth: margin.left + 450};
+            const legendCols = {first: margin.left, second: margin.left + 130, third: margin.left + 290, fourth: margin.left + 460};
             
 
             // FIGURE OUT A SCRIPT TO DO THIS
             // figure legend
             const legend = d3.select('svg#legendsvg');
             legend.append("circle").attr("cx", legendCols.first).attr("cy",legendRows.first).attr("r", 6).style("fill", "#31709B");
-            legend.append("text").attr("x", legendCols.first + 20).attr("y", legendRows.first).text("Musical").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("text").attr("x", legendCols.first + 20).attr("y", legendRows.first).text("Musical").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
             legend.append("circle").attr("cx", legendCols.first).attr("cy",legendRows.second).attr("r", 6).style("fill", "#9BC7D2");
-            legend.append("text").attr("x", legendCols.first + 20).attr("y", legendRows.second).text("Adventure").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("text").attr("x", legendCols.first + 20).attr("y", legendRows.second).text("Adventure").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
             legend.append("circle").attr("cx", legendCols.first).attr("cy",legendRows.third).attr("r", 6).style("fill", "#B591F3");
             legend.append("text").attr("x", legendCols.first + 20).attr("y", legendRows.third).text("Drama").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
 
             legend.append("circle").attr("cx", legendCols.second).attr("cy",legendRows.first).attr("r", 6).style("fill", "#EFA23D");
-            legend.append("text").attr("x", legendCols.second + 20).attr("y", legendRows.first).text("Comedy").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("text").attr("x", legendCols.second + 20).attr("y", legendRows.first).text("Comedy").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
             legend.append("circle").attr("cx", legendCols.second).attr("cy",legendRows.second).attr("r", 6).style("fill", "#FBD26E");
-            legend.append("text").attr("x", legendCols.second + 20).attr("y", legendRows.second).text("Horror").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("text").attr("x", legendCols.second + 20).attr("y", legendRows.second).text("Horror").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
             legend.append("circle").attr("cx", legendCols.second).attr("cy",legendRows.third).attr("r", 6).style("fill", "#FCE7AB");
-            legend.append("text").attr("x", legendCols.second + 20).attr("y", legendRows.third).text("Thriller/Suspense").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("text").attr("x", legendCols.second + 20).attr("y", legendRows.third).text("Thriller/Suspense").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
 
             legend.append("circle").attr("cx", legendCols.third).attr("cy",legendRows.first).attr("r", 6).style("fill", "#AC5D9E");
-            legend.append("text").attr("x", legendCols.third + 20).attr("y", legendRows.first).text("Romantic Comedy").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("text").attr("x", legendCols.third + 20).attr("y", legendRows.first).text("Romantic Comedy").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
             legend.append("circle").attr("cx", legendCols.third).attr("cy",legendRows.second).attr("r", 6).style("fill", "#D282B4");
-            legend.append("text").attr("x", legendCols.third + 20).attr("y", legendRows.second).text("Western").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("text").attr("x", legendCols.third + 20).attr("y", legendRows.second).text("Western").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
             legend.append("circle").attr("cx", legendCols.third).attr("cy",legendRows.third).attr("r", 6).style("fill", "#F5A7A8");
-            legend.append("text").attr("x", legendCols.third + 20).attr("y", legendRows.third).text("Black Comedy").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("text").attr("x", legendCols.third + 20).attr("y", legendRows.third).text("Black Comedy").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
+
+            legend.append("circle").attr("cx", legendCols.fourth).attr("cy",legendRows.first).attr("r", 6).style("fill", "#569B7E");
+            legend.append("text").attr("x", legendCols.fourth + 20).attr("y", legendRows.first).text("Documentary").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
+            legend.append("circle").attr("cx", legendCols.fourth).attr("cy",legendRows.second).attr("r", 6).style("fill", "#77C8A6");
+            legend.append("text").attr("x", legendCols.fourth + 20).attr("y", legendRows.second).text("Action").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
+            legend.append("circle").attr("cx", legendCols.fourth).attr("cy",legendRows.third).attr("r", 6).style("fill", "#E2BB9D");
+            legend.append("text").attr("x", legendCols.fourth + 20).attr("y", legendRows.third).text("Concert/Performance").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
 
             // // making a temporary figure legend
             // genreScale.domain().forEach( function (d,i) {
