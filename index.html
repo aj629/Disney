@@ -13,6 +13,10 @@
         .gridlines .domain {
         stroke: none;
         }
+
+        .label text {
+            color: black;
+        }
     </style>
 
 </head>
@@ -21,6 +25,10 @@
     <div id="plot1">
         <svg id="scatterplot" height="500" width= "1000">
         </svg>
+    </div>
+
+    <div id="legend">
+        <svg id="legendsvg" height = "200" width="800"></svg>
     </div>
     <script>
 
@@ -88,7 +96,7 @@
                     return e.title === d
                 })
             });
-            console.log(data);
+            //console.log(data);
 
 
             // coercing the box office values to numbers, split the string of release dates to get the month as a number
@@ -102,13 +110,13 @@
 
             // removing box office values that were unreasonably low (some values were less than 200, which did not make sense)
             data = data.filter( (d) => {return d['Box'] > 200 ;} );
-            console.log(data);
+            //console.log(data);
 
 
             // extents and scales
             const boxExtent = d3.extent(data, d => d['Box']);
-            console.log(boxExtent);
-            const boxScale = d3.scaleLinear().domain(boxExtent).range([chartHeight, margin.bottom]);
+            //using a Log scale so there is a better separation of values and not too many values clustered at the bottom
+            const boxScale = d3.scaleLog().domain(boxExtent).range([chartHeight, margin.bottom]);
 
 
             // const months = d3.map(data, d => d.month)
@@ -145,26 +153,78 @@
                     .call(bottomAxis);
             
 
+          
+            
+
             // combining two datasets to have one array with the movie title, genre and box office profits
             let profitsGenres = d3.index(data, d => d.title);
-            console.log(profitsGenres);
-            console.log(genres);
+            // console.log(profitsGenres);
+            // console.log(genres);
 
             // this 'data' is now a combined dataset to help graph multiple attributes
             data = data.map(({title: name, month, Box}) => ({name, month, Box, ...genres.get(name)}));
             console.log(data);
 
 
+            // making a custom color scale to color each data point by genre
+            const genreScale = d3.scaleOrdinal()
+                                       .domain(["Musical", "Comedy", "Romantic Comedy", "Documentary", "Adventure", "Horror", "Western", "Action", "Drama", "Thriller/Suspense", "Black Comedy", "Concert/Performance"])
+                                       .range(["#31709B", "#EFA23D", "#AC5D9E", "#569B7E", "#9BC7D2", "#FBD26E", "#D282B4", "#77C8A6", "#B591F3", "#FCE7AB", "#F5A7A8", "#E2BB9D"]);
+
             // adding circles for data points
             let circles = chartArea.selectAll("circle").data(data)
                                    .join("circle")
-                                   .attr("cx", d => monthScale(d['month'])-margin.left)
-                                   .attr("cy", d => boxScale(d['Box']))
-                                   .attr("r", 4)
-                                   .style('fill', 'steelblue')
-                                   .attr('opacity', 0.7);
+                                   .attr("cx", d => monthScale(d['month'])-margin.left + jitter())
+                                   .attr("cy", d => boxScale(d['Box'])+jitter())
+                                   .attr("r", 5)
+                                   .style('fill', d => genreScale(d['genre']))
+                                   .attr('opacity', 0.8);
 
+            // FIX THIS
+            // creating text for axis labels
+            chartArea.append("text")
+                    .attr('class', 'x label')
+                    .attr('text-anchor', 'middle')
+                    .attr('x', '500')
+                    .attr('y', '500')
+                    .attr('text', 'release month');
 
+            const legendRows = {first: 20, second: 50, third: 80};
+            const legendCols = {first: margin.left, second: margin.left + 130, third: margin.left + 300, fourth: margin.left + 450};
+            
+
+            // FIGURE OUT A SCRIPT TO DO THIS
+            // figure legend
+            const legend = d3.select('svg#legendsvg');
+            legend.append("circle").attr("cx", legendCols.first).attr("cy",legendRows.first).attr("r", 6).style("fill", "#31709B");
+            legend.append("text").attr("x", legendCols.first + 20).attr("y", legendRows.first).text("Musical").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("circle").attr("cx", legendCols.first).attr("cy",legendRows.second).attr("r", 6).style("fill", "#9BC7D2");
+            legend.append("text").attr("x", legendCols.first + 20).attr("y", legendRows.second).text("Adventure").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("circle").attr("cx", legendCols.first).attr("cy",legendRows.third).attr("r", 6).style("fill", "#B591F3");
+            legend.append("text").attr("x", legendCols.first + 20).attr("y", legendRows.third).text("Drama").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+
+            legend.append("circle").attr("cx", legendCols.second).attr("cy",legendRows.first).attr("r", 6).style("fill", "#EFA23D");
+            legend.append("text").attr("x", legendCols.second + 20).attr("y", legendRows.first).text("Comedy").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("circle").attr("cx", legendCols.second).attr("cy",legendRows.second).attr("r", 6).style("fill", "#FBD26E");
+            legend.append("text").attr("x", legendCols.second + 20).attr("y", legendRows.second).text("Horror").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("circle").attr("cx", legendCols.second).attr("cy",legendRows.third).attr("r", 6).style("fill", "#FCE7AB");
+            legend.append("text").attr("x", legendCols.second + 20).attr("y", legendRows.third).text("Thriller/Suspense").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+
+            legend.append("circle").attr("cx", legendCols.third).attr("cy",legendRows.first).attr("r", 6).style("fill", "#AC5D9E");
+            legend.append("text").attr("x", legendCols.third + 20).attr("y", legendRows.first).text("Romantic Comedy").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("circle").attr("cx", legendCols.third).attr("cy",legendRows.second).attr("r", 6).style("fill", "#D282B4");
+            legend.append("text").attr("x", legendCols.third + 20).attr("y", legendRows.second).text("Western").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+            legend.append("circle").attr("cx", legendCols.third).attr("cy",legendRows.third).attr("r", 6).style("fill", "#F5A7A8");
+            legend.append("text").attr("x", legendCols.third + 20).attr("y", legendRows.third).text("Black Comedy").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
+
+            // // making a temporary figure legend
+            // genreScale.domain().forEach( function (d,i) {
+            //     d3.select("#legend")
+            //     .append("span")
+            //     .text(d)
+            //     .style("color", genreScale(d))
+            // });
+  
 
                 
  
@@ -172,17 +232,6 @@
 
        
 
-        
-
-
-        // // HELP WITH THIS PART
-
-        // // function to parse through both datasets
-        // const parseData = async () => {
-        //     var disney1 = await d3.csv('../disney.csv')
-        //     var disney2 = await d3.csv('../disney_movies_total_gross.csv')
-            
-        // }
 
         // // list of genres
         // let genres = []
@@ -192,8 +241,13 @@
         //         }
         //     // console.log(genres.length)
         //     })
-         
+
+        // jitter helper function
+        function jitter () {
+                return Math.floor(Math.random() * (8) + (-4)) ;
+            }
     </script>
 
+<!-- QUESTIONS: use log scale or linear scale? use jitter function? -->
 </body>
 </html>
