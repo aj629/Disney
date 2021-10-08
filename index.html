@@ -37,22 +37,34 @@
         let labels = svg1.append('g').attr('id', 'labels');
         let chartArea = svg1.append("g").attr("id","boxOffice")
                             .attr("transform","translate("+margin.left+","+margin.top+")");
-
+                
         // making a dictionary to label the months in abbreviations instead of letters
         const monthsDict = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'};
 
-        // making a map for titles/genres
-        let genres = [];
-
-        // removing empty values for the genre/total gross income data set
-        d3.csv('../disney_movies_total_gross.csv').then( (genredata) => {
-            genredata = genredata.filter( (d) => {return d['genre'] != "";}  );
-            genredata = genredata.filter( (d) => {return d['total_gross'] != 0;}  );
-
-            let genres = d3.index(genredata, d => d.name)
+        let genres = {};
+        d3.csv('../disney_movies_total_gross.csv').then( (genreData) => {
             
+            // removing empty values for the genre/total gross income data set
+            genreData = genreData.filter( (d) => {return d['genre'] != "";}  );
+            genreData = genreData.filter( (d) => {return d['total_gross'] != 0;}  );
+
+            //trying to remove duplicate titles for the genres data set
+            var genreTitles = [...new Set(genreData.map(function(d) {
+                return d['movie_title']
+            }))];
+            
+            genreData = genreTitles.map(function(d) {
+                return genreData.find(function(e) {
+                    return e['movie_title'] === d
+                })
+            });
+
+            // making a map with the movie title as the key
+            genres = d3.index(genreData, d => d['movie_title']);
+            //console.log(genres);
+   
         });
-        console.log(genres);
+
         
 
 
@@ -78,9 +90,10 @@
             });
             console.log(data);
 
+
             // coercing the box office values to numbers, split the string of release dates to get the month as a number
             data.forEach( (d, i) => {
-                d['Box office (float)'] = Number( d['Box office (float)']);
+                d['Box'] = Number( d['Box office (float)']);
                 d['Release date (datetime)'] = d['Release date (datetime)'].split("-");
                 d['monthNum'] = Number(d['Release date (datetime)'][1]);
                 d['month'] = monthsDict[d['monthNum']];
@@ -88,14 +101,15 @@
 
 
             // removing box office values that were unreasonably low (some values were less than 200, which did not make sense)
-            data = data.filter( (d) => {return d['Box office (float)'] > 200 ;} );
+            data = data.filter( (d) => {return d['Box'] > 200 ;} );
             console.log(data);
 
-            // extents and scales
 
-            const boxExtent = d3.extent(data, d => d['Box office (float)']);
+            // extents and scales
+            const boxExtent = d3.extent(data, d => d['Box']);
             console.log(boxExtent);
             const boxScale = d3.scaleLinear().domain(boxExtent).range([chartHeight, margin.bottom]);
+
 
             // const months = d3.map(data, d => d.month)
             // console.log(months);
@@ -118,7 +132,6 @@
                 .call(leftAxis)
 
 
-
             let bottomAxis = d3.axisBottom(monthScale).tickFormat("");
             let bottomGridlines = d3.axisBottom(monthScale).tickSize(-chartHeight+20);
               
@@ -131,9 +144,27 @@
                     .attr("transform","translate("+0+","+(chartHeight+margin.top)+")")
                     .call(bottomAxis);
             
-            // wanting to join 2 datasets
-            let index = d3.index(data, d => d.title);
-            console.log(index);
+
+            // combining two datasets to have one array with the movie title, genre and box office profits
+            let profitsGenres = d3.index(data, d => d.title);
+            console.log(profitsGenres);
+            console.log(genres);
+
+            // this 'data' is now a combined dataset to help graph multiple attributes
+            data = data.map(({title: name, month, Box}) => ({name, month, Box, ...genres.get(name)}));
+            console.log(data);
+
+
+            // adding circles for data points
+            let circles = chartArea.selectAll("circle").data(data)
+                                   .join("circle")
+                                   .attr("cx", d => monthScale(d['month'])-margin.left)
+                                   .attr("cy", d => boxScale(d['Box']))
+                                   .attr("r", 4)
+                                   .style('fill', 'steelblue')
+                                   .attr('opacity', 0.7);
+
+
 
                 
  
@@ -144,17 +175,17 @@
         
 
 
-        // HELP WITH THIS PART
+        // // HELP WITH THIS PART
 
-        // function to parse through both datasets
-        const parseData = async () => {
-            var disney1 = await d3.csv('../disney.csv')
-            var disney2 = await d3.csv('../disney_movies_total_gross.csv')
+        // // function to parse through both datasets
+        // const parseData = async () => {
+        //     var disney1 = await d3.csv('../disney.csv')
+        //     var disney2 = await d3.csv('../disney_movies_total_gross.csv')
             
-        }
+        // }
 
         // // list of genres
-
+        // let genres = []
         // genredata.forEach( (d,i) => {
         //         if (!(genres.includes(d['genre']) )) {
         //             genres.push(d['genre'])
