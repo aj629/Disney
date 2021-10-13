@@ -23,7 +23,7 @@
 
 <body>
     <div id="plot1">
-        <svg id="scatterplot" height="500" width= "1000">
+        <svg id="scatterplot" height="800" width= "1200">
         </svg>
     </div>
 
@@ -113,6 +113,7 @@
                 d['Release date (datetime)'] = d['Release date (datetime)'].split("-");
                 d['monthNum'] = Number(d['Release date (datetime)'][1]);
                 d['month'] = monthsDict[d['monthNum']];
+                d['budget'] = Number(d['Budget (float)']);
             })
 
 
@@ -170,7 +171,7 @@
             console.log(profitsGenres);
 
             // this 'data' is now a combined dataset to help graph multiple attributes
-            data = data.map(({title: name, month, Box}) => ({name, month, Box, ...genres.get(name)}));
+            data = data.map(({title: name, month, Box, budget}) => ({name, month, Box, budget, ...genres.get(name)}));
             console.log(data);
     
 
@@ -185,7 +186,7 @@
                                    .join("circle")
                                    .attr("cx", d => monthScale(d['month'])-margin.left + jitter())
                                    .attr("cy", d => boxScale(d['Box'])+jitter())
-                                   .attr("r", 5)
+                                   .attr("r", 6)
                                    .style('fill', d => genreScale(d['genre']))
                                    .attr('opacity', 0.8);
 
