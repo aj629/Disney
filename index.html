@@ -51,12 +51,17 @@
 
         let genres = {};
         d3.csv('../disney_movies_total_gross.csv').then( (genreData) => {
-            
+            console.log(genreData);
             // removing empty values for the genre/total gross income data set
             genreData = genreData.filter( (d) => {return d['genre'] != "";}  );
             genreData = genreData.filter( (d) => {return d['total_gross'] != 0;}  );
-
+            genreData.forEach( (d, i) => {
+                d['total_gross'] = Number( d['total_gross']);
+            })
+            
+            console.log(genreData);
             //trying to remove duplicate titles for the genres data set
+            // got this way of filtering duplicates from https://stackoverflow.com/questions/45037768/d3-filter-duplicates-names-from-csv
             var genreTitles = [...new Set(genreData.map(function(d) {
                 return d['movie_title']
             }))];
@@ -66,10 +71,11 @@
                     return e['movie_title'] === d
                 })
             });
-
+            console.log(genres);
             // making a map with the movie title as the key
+            // got this idea from https://observablehq.com/@d3/d3-group
             genres = d3.index(genreData, d => d['movie_title']);
-            //console.log(genres);
+            console.log(genres);
    
         });
 
@@ -79,6 +85,7 @@
         // promise for second data set, which has box office profits data, release dates and movie titles
 
         d3.csv('../disney.csv').then( (data) => {
+            console.log(data);
 
             // removing empty values for the box office/budget data set 
             // I removed empty values for the budget, box office, title, and release date
@@ -88,6 +95,7 @@
             data = data.filter( (d) => {return d['Release date (datetime)'] != '';});
             
             //trying to remove duplicate titles
+            // got this way of filtering duplicates from https://stackoverflow.com/questions/45037768/d3-filter-duplicates-names-from-csv
             var titles = [...new Set(data.map(function(d) {
                 return d.title
             }))];
@@ -110,7 +118,7 @@
 
             // removing box office values that were unreasonably low (some values were less than 200, which did not make sense)
             data = data.filter( (d) => {return d['Box'] > 200 ;} );
-            //console.log(data);
+            console.log(data);
 
 
             // extents and scales
@@ -157,13 +165,14 @@
             
 
             // combining two datasets to have one array with the movie title, genre and box office profits
+            // got this way of combining datasets from https://observablehq.com/@d3/d3-group
             let profitsGenres = d3.index(data, d => d.title);
-            // console.log(profitsGenres);
-            // console.log(genres);
+            console.log(profitsGenres);
 
             // this 'data' is now a combined dataset to help graph multiple attributes
             data = data.map(({title: name, month, Box}) => ({name, month, Box, ...genres.get(name)}));
             console.log(data);
+    
 
 
             // making a custom color scale to color each data point by genre
@@ -254,6 +263,8 @@
                 return Math.floor(Math.random() * (8) + (-4)) ;
             }
     </script>
+
+    
 
 <!-- QUESTIONS: use log scale or linear scale? use jitter function? -->
 </body>
