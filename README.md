@@ -48,7 +48,7 @@ Target viewers: The target audience of our data representation would be people i
 #### Graph 1:
 
 * Viewers can see
-** The box office profits of each movie - to see which genre of the movie got higher box office profits - Number of movies released in each month - to see the comparison between months
+   * The box office profits of each movie - to see which genre of the movie got higher box office profits - Number of movies released in each month - to see the comparison between months
 
 * Convey to the audience / want them to consider
   * What time of the month would be most profitable for a movie release?
