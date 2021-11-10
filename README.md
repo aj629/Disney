@@ -3,7 +3,7 @@ Web-App Visualization of Disney Movies
 
 
 
-Description:
+### Description:
 
 https://www.kaggle.com/sonukumari47/disney-movie-dataset 
 https://www.kaggle.com/rashikrahmanpritom/disney-movies-19372016-total-gros
@@ -15,64 +15,64 @@ To clean data, any movies with no value in the Budget, Box Office, or release da
 Any movies with no value in the column Genre, release date, or total gross income from dataset B were also removed. This was done using the .filter() builtin. Total gross income was selected as an attribute to visualize instead of adjusted gross because it was unclear how the adjusted version was calculated. Total gross was also coerced to a Number type from the Similarly in B, we also checked for duplicated movies with set and .map().
 The two datasets were then joined to make one array of movie titles from the mappings we made with the title. A new dataset was created using data.map() merges on the key name (movie title) and adds a new column in the value dictionary called genre which contains the genre of the movie from the genre dictionary. An extra filter needed to filter got movie titles that had box offices and no genre in the genre dictionary. Overall, it was found that there were 176 overlapping movies to be represented in our graphs.
 
-   Design Rationale: Graph 1:
+### Design Rationale: Graph 1:
    
-● Form, Variables, Axis, Canvas Size
+* Form, Variables, Axis, Canvas Size
 We chose to use a dot plot to visualize the data which shows three variables for Graph 1. The three variables for Graph 1 are months, the movie’s box office profits, and the movie genres. Considering the relationship between months and movies’ box office profits, we decided to put months on the x-axis and box office profits on the y-axis. We chose not to flip the y-axis and z-axis because the spread of months would be longer than the spread of box office profits on axes and data would get too crowded if we flip. To spread values out more, we adjusted the plot SVG a little bit wider, so the final canvas size is 1200*800.
-● Marks (Shape), Channels, Gridline, Legend
+* Marks (Shape), Channels, Gridline, Legend
 The marks of the visualization are circles and the channels are the color hue of the circles and the varying horizontal and vertically aligned position of dots. We chose circles (radius: 6) instead of bars or lines as marks because circles can be scattered to show a number of movies when we have so many movies in the dataset. As every single dot represents each movie, it is easier for the viewers to read the information of each movie (genre, box office, months it is released) and see the comparison between different movies. We added gridlines to the y-axis because with too many circles on the graph and too many numbers on the y-axis, it is difficult for the viewers to read the number of the box office profit for each movie. We did the same thing to the x-axis so that it is easier to identify months. To explain the genre of each movie, we created a legend at the bottom of the plot which contains the color set for genres and genre name. To format the y-axis, the tick labels were formatted to show numbers in millions with d3.format(), and every other label was removed so that the axis would not be too crowded with numbers. A log scale was used for box office profits to allow for a greater visual distribution of data. A jitter function was also added to both the x and y positions for the circles so that circles would have less overlap.
-● Color (Axis, Gridline, Marks), Typography
+* Color (Axis, Gridline, Marks), Typography
 As there are too many gridlines for the y-axis, to make the circles pop out, we picked a very light grey color (#D3D3D3) for these gridlines. The color for the axes is decided to be a darker grey (RGB(63, 63, 63)) so that the viewers can read them clearly. We used different colors to help viewers to differentiate different movies. Before this, we discussed an alternative to use icons to represent these 10 genres of movies. However, icons with different graphics and colors would make the circles hard to distinguish when there are a lot of small circles. As a result, we think coloring the circles is a better choice. We have also been careful about choosing the 10 colors. To better match the theme of Disney, we have chosen the colors from the Disney color palette. For genres that have many movies, we used complementary colors so that they can show a great contrast. For instance, we used the color purple for the genre Comedy and color orange for the genre Adventure. We changed the transparency of each circle to 0.8 so that viewers can distinguish circles overlapping with each other. We chose Avenir font for the text because Avenir is somewhat geometric with some vertical strokes, which makes it look simple. We did not use a cartoonish font considering the readability of the text to viewers.
 
-Tradeoff
+#### Tradeoff
 When the circles of the same color are overlapping with each other on the plot, it is hard for the viewers to count the number of the circles. The tradeoff for using a log scale is that it makes comparisons for specific movies’ box office profits less intuitive — even though two points might be relatively close together with regards to vertical position, there might be a huge difference in their box office profits. However, we decided that this tradeoff was worth it so users could better distinguish specific data points. There is a tradeoff for adding a jitter function as well since it makes distinguishing y-position less accurate and increases the visual clutter of the graph. However, we decided since the purpose of the graph is to look at overall trends and not discern precise values for each data point, it was worth it to have circles be a little more spread out.
 
-Graph 2:
+### Graph 2:
 
-● Form, Variables, Axis, Canvas Size
+* Form, Variables, Axis, Canvas Size
 We chose to use a bar graph to visualize the data which shows three variables for Graph 2. The three variables are movie genres, total gross income, and budget. As the two variables, budget and total gross income, vary based on different movie genres, we decided to put movie genres on the y-axis. As there are 10 genres and each genre would have two bars, we decide to make the bar horizontally extend so that the bars will not be too crowded. Having the bars ordered vertically also matches people’s convention of reading the information in ranks. To fit the whole graph, we set the canvas to be 1200*1000.
 
-● Marks (Shape), Channels, Gridline, Labels
+* Marks (Shape), Channels, Gridline, Labels
 The mark of the visualization is rectangles with rounded corners and the channels are varying the horizontally aligned length and vertically aligned position of rectangles. We made the corners of rectangles to be round to make the visual system consistent since the circles in Graph 1 are round. Each genre has two bars: the grey one represents the genre’s total budget and the colored one represents the total gross of income of the genre. The grey bar is below the colored bar. We made the two bars of the same genre close to each other and separated them farther apart from the ones from the adjacent different genres. Based on the Gestalt Principle of Law of Proximity which means that when individual elements are clustered together, users will recognize it as one. Labels of dollar amounts for total gross income and budget are respectively placed at the end of each bar. The genres are ordered according to the amount of total gross income in descending order from top to bottom. This can make it easier for the viewers to notice the ranking in the gross income of different genres. The percentage number was placed in a circle at the end of the two bars. The circles are connected with the two bars with a line going through the bars. The intention of adding the circles is to make the percentage number pop out and the lines are added to show the correspondence between each circle and the bars.
 
-● Color (Axis, Gridline, Marks), Typography, (Connections between the Two Graphs)
+* Color (Axis, Gridline, Marks), Typography, (Connections between the Two Graphs)
 We chose to make the budget bar grey and the total gross income bar colored because the total gross income represents a positive number while the budget represents a negative number. The colors of the rectangles of total gross income are consistent with the colors of these in Graph 1. The intention for the consistency between colors is that it can be easier for the viewers to recognize each genre when they have stored the colors into the short memory in Graph 1. To keep the whole visualization consistent, we have used the same font for two graphs.
 
-● Tradeoff
+#### Tradeoff
 - A log scale was used to more clearly represent the wide range of monetary value. There was a trade-off of using exact numbers vs a scale. It was ultimately decided that the scale version resulted in much more comparable bars for each genre. The linear scale results in most of the bars being really small, which was not visually appealing or informative. The log scale did have the drawback of having bars that were not intuitively comparable, which could be somewhat misleading. However, it was determined to be a better fit. To compromise with the drawback of the log scale, percentage bubbles were added to provide the context that is lacking from the bar visualization. We also sorted the graph from most gross income to least gross income to add more intuition to the visualization.
 - In the legend, the bar for the total gross income is shown in the dark grey bar, which might cause confusion as it does not match the colored bar in the plot. We did not want to pick a color that was not used as that may be more confusing. The intention was that dark grey was meant to signify a neutral color.
 
-Story:
+### Story:
 Target viewers: The target audience of our data representation would be people interested in maximizing profit in the movie/movie-related industry. This would include movie production companies, actors, entertainment companies adjacent to the movie industry.
 
-Graph 1:
+#### Graph 1:
 
-● Viewers can see
-- The box office profits of each movie - to see which genre of the movie got higher box office profits - Number of movies released in each month - to see the comparison between months
+* Viewers can see
+** The box office profits of each movie - to see which genre of the movie got higher box office profits - Number of movies released in each month - to see the comparison between months
 
-● Convey to the audience / want them to consider
-- What time of the month would be most profitable for a movie release?
-- What type of movie is the most profitable? Does that change depending on the time of the year? For example, are dramas more profitable in the winter compared to the summer?
-
-
-Graph 2:
+* Convey to the audience / want them to consider
+** What time of the month would be most profitable for a movie release?
+** What type of movie is the most profitable? Does that change depending on the time of the year? For example, are dramas more profitable in the winter compared to the summer?
 
 
-● Viewers can see
-- Number of the total gross income of each genre - to see the comparison between genres - The total budget of each genre
-- Percentage of net profit by: income/budget
+#### Graph 2:
 
 
-● Convey to the audience / want them to consider
-- To show a better understanding of the net profit of the movie genres
-- A particular genre might make a lot of money but it could also have been a very expensive
+* Viewers can see
+** Number of the total gross income of each genre - to see the comparison between genres - The total budget of each genre
+** Percentage of net profit by: income/budget
+
+
+* Convey to the audience / want them to consider
+** To show a better understanding of the net profit of the movie genres
+** A particular genre might make a lot of money but it could also have been a very expensive
 production which would mean it is not as profitable as it seems.
-- The greater budgets for movies overall could show which genre movies are created most
+** The greater budgets for movies overall could show which genre movies are created most
 often and potentially over-saturated while a less produced genre could have better profit margins that were not as obvious.
 - Note some genres (like Adventure) have a large number of movies, which is why they have a much higher total gross income and budget compared to other genres.
 
 
-Overall:
+## Overall Analysis:
 Our graphs aim to provide individuals and entities that are invested in the movie industry to maximize profits and perhaps discover “untapped” genres or genres to avoid.
 
 From Graph 1, we can see that we have some “topbar” months where a majority of the movies — regardless of the genre — made relatively high box office profits. These months are Feb, May, Jun, and Nov. High clustering of movies in high box office regions were especially seen in November. These months tend to correlate with school breaks such as Thanksgiving break -> Nov, Summer break -> May/Jun, and February break -> Feb. Though it was interesting to see that December did not make the list. This might be because actors/companies take the Christmas season off or perhaps Christmas classics often take over the market during the season. It was also really interesting to see that later summer months do not do as well. You would expect that since kids/teens would have time off, they would have time to watch movies/go to the theater. However, as summer moves to fall, the number of movies decreases and the numbers increase again as the transition to winter begins. Not only do the number of movies decrease, but the number of Adventure movies (the leading box office genre) also decreases significantly ( high: Jun and low: Jul, Aug, Sep).
