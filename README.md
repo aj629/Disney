@@ -51,23 +51,23 @@ Target viewers: The target audience of our data representation would be people i
 ** The box office profits of each movie - to see which genre of the movie got higher box office profits - Number of movies released in each month - to see the comparison between months
 
 * Convey to the audience / want them to consider
-** What time of the month would be most profitable for a movie release?
-** What type of movie is the most profitable? Does that change depending on the time of the year? For example, are dramas more profitable in the winter compared to the summer?
+  * What time of the month would be most profitable for a movie release?
+  * What type of movie is the most profitable? Does that change depending on the time of the year? For example, are dramas more profitable in the winter compared to the summer?
 
 
 #### Graph 2:
 
 
 * Viewers can see
-** Number of the total gross income of each genre - to see the comparison between genres - The total budget of each genre
-** Percentage of net profit by: income/budget
+  * Number of the total gross income of each genre - to see the comparison between genres - The total budget of each genre
+  * Percentage of net profit by: income/budget
 
 
 * Convey to the audience / want them to consider
-** To show a better understanding of the net profit of the movie genres
-** A particular genre might make a lot of money but it could also have been a very expensive
+  * To show a better understanding of the net profit of the movie genres
+  * A particular genre might make a lot of money but it could also have been a very expensive
 production which would mean it is not as profitable as it seems.
-** The greater budgets for movies overall could show which genre movies are created most
+  * The greater budgets for movies overall could show which genre movies are created most
 often and potentially over-saturated while a less produced genre could have better profit margins that were not as obvious.
 - Note some genres (like Adventure) have a large number of movies, which is why they have a much higher total gross income and budget compared to other genres.
 
