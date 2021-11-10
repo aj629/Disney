@@ -1,272 +1,910 @@
 <html>
-<head>
+  <head>
     <meta charset="UTF-8" />
     <title>INFO 3300 Project 1</title>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
 
     <style>
-        .gridlines line {
-        stroke: #bbb;
-        }
-        
-        .gridlines .domain {
+      .gridlines line {
+        stroke: #d3d3d3;
+      }
+
+      .gridlines .domain {
         stroke: none;
-        }
+      }
 
-        .label text {
-            color: black;
-        }
+      .label text {
+        color: #333333;
+      }
+
+      .tick {
+        color: rgb(63, 63, 63);
+        font-family: avenir;
+        font-size: 10px;
+      }
+
+      .axis {
+        color: rgb(63, 63, 63);
+      }
+
+      text {
+        font-family: avenir;
+        color: #333333;
+      }
+
+      text.chart-title {
+        color: rgb(63, 63, 63);
+        font-size: 30px;
+        font-family: avenir;
+
+        /* font-weight: bold; */
+      }
+
+      text.axis-label {
+        font-size: 20px;
+        color: rgb(63, 63, 63);
+      }
+
+      #plot1 {
+        margin-left: 50px;
+        margin-top: 60px;
+      }
+      #legend {
+        margin-left: 20px;
+        margin-top: 10px;
+      }
+
+      .titleBackground {
+        margin-bottom: 40px;
+      }
     </style>
+  </head>
 
-</head>
-
-<body>
+  <body>
     <div id="plot1">
-        <svg id="scatterplot" height="800" width= "1200">
-        </svg>
+      <svg id="scatterplot" height="900" width="1200"></svg>
     </div>
 
     <div id="legend">
-        <svg id="legendsvg" height = "200" width="800"></svg>
+      <svg id="legendsvg" height="200" width="1200"></svg>
     </div>
+
+    <!-- for graph 2 -->
+    <div>
+      <svg id="canvaTwo" height="1200" width="1200" style="margin: 15px"></svg>
+    </div>
+
     <script>
+      // setting up svg
+      const svg1 = d3.select("svg#scatterplot");
 
-        // setting up svg
-        const svg1 = d3.select('svg#scatterplot')
+      const width = svg1.attr("width");
+      const height = svg1.attr("height");
+      const margin = { top: 50, right: 30, bottom: 80, left: 100 };
 
-        const width = svg1.attr("width");
-        const height = svg1.attr("height");
-        const margin = {top: 10, right: 30, bottom: 40, left: 100};
-        
-        const chartWidth = width - margin.left - margin.right;
-        const chartHeight = height - margin.top - margin.bottom;
+      const chartWidth = width - margin.left - margin.right;
+      const chartHeight = height - margin.top - margin.bottom;
 
-        let labels = svg1.append('g').attr('id', 'labels');
-        let chartArea = svg1.append("g").attr("id","boxOffice")
-                            .attr("transform","translate("+margin.left+","+margin.top+")");
-                
-        // making a dictionary to label the months in abbreviations instead of letters
-        const monthsDict = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'};
+      let labels = svg1.append("g").attr("id", "labels");
+      let chartArea = svg1
+        .append("g")
+        .attr("id", "boxOffice")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      let axes = svg1.append("g").attr("id", "axes");
 
-        let genres = {};
-        d3.csv('../disney_movies_total_gross.csv').then( (genreData) => {
-            console.log(genreData);
-            // removing empty values for the genre/total gross income data set
-            genreData = genreData.filter( (d) => {return d['genre'] != "";}  );
-            genreData = genreData.filter( (d) => {return d['total_gross'] != 0;}  );
-            genreData.forEach( (d, i) => {
-                d['total_gross'] = Number( d['total_gross']);
-            })
-            
-            console.log(genreData);
-            //trying to remove duplicate titles for the genres data set
-            // got this way of filtering duplicates from https://stackoverflow.com/questions/45037768/d3-filter-duplicates-names-from-csv
-            var genreTitles = [...new Set(genreData.map(function(d) {
-                return d['movie_title']
-            }))];
-            
-            genreData = genreTitles.map(function(d) {
-                return genreData.find(function(e) {
-                    return e['movie_title'] === d
-                })
-            });
-            console.log(genres);
-            // making a map with the movie title as the key
-            // got this idea from https://observablehq.com/@d3/d3-group
-            genres = d3.index(genreData, d => d['movie_title']);
-            console.log(genres);
-   
+      // for graph 2
+      let canvaTwo = d3.select("svg#canvaTwo");
+      const widthTwo = canvaTwo.attr("width");
+      const heightTwo = canvaTwo.attr("height");
+
+      const marginTwo = { top: 200, right: 90, bottom: 40, left: 170 };
+      const chartWidthTwo = widthTwo - marginTwo.left - marginTwo.right;
+      const chartHeightTwo = heightTwo - marginTwo.top - marginTwo.bottom;
+      let chartAreaTwo = canvaTwo
+        .append("g")
+        .attr("id", "chartArea")
+        .attr("transform", `translate(${marginTwo.left},${marginTwo.top})`);
+      let graphing = canvaTwo.append("g").attr("id", "graphing");
+
+      // making a dictionary to label the months in abbreviations instead of letters
+      const monthsDict = {
+        1: "Jan",
+        2: "Feb",
+        3: "Mar",
+        4: "Apr",
+        5: "May",
+        6: "Jun",
+        7: "Jul",
+        8: "Aug",
+        9: "Sep",
+        10: "Oct",
+        11: "Nov",
+        12: "Dec",
+      };
+
+      let genres = {};
+      d3.csv("./disney_movies_total_gross.csv").then((genreData) => {
+        console.log(genreData);
+        // removing empty values for the genre/total gross income data set
+        genreData = genreData.filter((d) => {
+          return d["genre"] != "";
+        });
+        genreData = genreData.filter((d) => {
+          return d["total_gross"] != 0;
+        });
+        genreData.forEach((d, i) => {
+          d["total_gross"] = Number(d["total_gross"]);
         });
 
-        
-
-
-        // promise for second data set, which has box office profits data, release dates and movie titles
-
-        d3.csv('../disney.csv').then( (data) => {
-            console.log(data);
-
-            // removing empty values for the box office/budget data set 
-            // I removed empty values for the budget, box office, title, and release date
-            data = data.filter( (d) => {return d['Budget (float)'] != "";}  );
-            data = data.filter( (d) => {return d['Box office (float)'] != "" && d['Box office (float)'] != "0";}  );
-            data = data.filter( (d) => {return d['title'] != "";}  );
-            data = data.filter( (d) => {return d['Release date (datetime)'] != '';});
-            
-            //trying to remove duplicate titles
-            // got this way of filtering duplicates from https://stackoverflow.com/questions/45037768/d3-filter-duplicates-names-from-csv
-            var titles = [...new Set(data.map(function(d) {
-                return d.title
-            }))];
-            data = titles.map(function(d) {
-                return data.find(function(e) {
-                    return e.title === d
-                })
-            });
-            //console.log(data);
-
-
-            // coercing the box office values to numbers, split the string of release dates to get the month as a number
-            data.forEach( (d, i) => {
-                d['Box'] = Number( d['Box office (float)']);
-                d['Release date (datetime)'] = d['Release date (datetime)'].split("-");
-                d['monthNum'] = Number(d['Release date (datetime)'][1]);
-                d['month'] = monthsDict[d['monthNum']];
-                d['budget'] = Number(d['Budget (float)']);
+        console.log(genreData);
+        //trying to remove duplicate titles for the genres data set
+        // got this way of filtering duplicates from https://stackoverflow.com/questions/45037768/d3-filter-duplicates-names-from-csv
+        var genreTitles = [
+          ...new Set(
+            genreData.map(function (d) {
+              return d["movie_title"];
             })
+          ),
+        ];
 
+        genreData = genreTitles.map(function (d) {
+          return genreData.find(function (e) {
+            return e["movie_title"] === d;
+          });
+        });
+        console.log(genres);
+        // making a map with the movie title as the key
+        // got this idea from https://observablehq.com/@d3/d3-group
+        genres = d3.index(genreData, (d) => d["movie_title"]);
+        console.log(genres);
+      });
 
-            // removing box office values that were unreasonably low (some values were less than 200, which did not make sense)
-            data = data.filter( (d) => {return d['Box'] > 200 ;} );
-            console.log(data);
+      // promise for second data set, which has box office profits data, release dates and movie titles
 
+      d3.csv("./disney_movie.csv").then((data) => {
+        console.log(data);
 
-            // extents and scales
-            const boxExtent = d3.extent(data, d => d['Box']);
-            //using a Log scale so there is a better separation of values and not too many values clustered at the bottom
-            const boxScale = d3.scaleLog().domain(boxExtent).range([chartHeight, margin.bottom]);
-
-
-            // const months = d3.map(data, d => d.month)
-            // console.log(months);
-            const monthScale = d3.scalePoint().domain(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']).range([margin.left, chartWidth]).padding(0.1);
-
-
-            // making axes and gridlines
-            let leftAxis = d3.axisLeft(boxScale).tickFormat("");
-            let leftGridlines = d3.axisLeft(boxScale)
-                                    .tickSize(-chartWidth+55)
-                                    .tickFormat(d3.format("~f"));
-
-            labels.append("g")
-                .attr("class", "y gridlines")
-                .attr("transform","translate("+(margin.left-15)+","+margin.top+")")
-                .call(leftGridlines);
-            labels.append("g")
-                .attr("class", "y axis")
-                .attr("transform","translate("+(margin.left-10)+","+margin.top+")")
-                .call(leftAxis)
-
-
-            let bottomAxis = d3.axisBottom(monthScale).tickFormat("");
-            let bottomGridlines = d3.axisBottom(monthScale).tickSize(-chartHeight+20);
-              
-            labels.append("g")
-                    .attr("class", "x gridlines")
-                    .attr("transform","translate("+0+","+(chartHeight+margin.top+10)+")")
-                    .call(bottomGridlines);
-            labels.append("g")
-                    .attr("class", "x axis")
-                    .attr("transform","translate("+0+","+(chartHeight+margin.top)+")")
-                    .call(bottomAxis);
-            
-
-          
-            
-
-            // combining two datasets to have one array with the movie title, genre and box office profits
-            // got this way of combining datasets from https://observablehq.com/@d3/d3-group
-            let profitsGenres = d3.index(data, d => d.title);
-            console.log(profitsGenres);
-
-            // this 'data' is now a combined dataset to help graph multiple attributes
-            data = data.map(({title: name, month, Box, budget}) => ({name, month, Box, budget, ...genres.get(name)}));
-            console.log(data);
-    
-
-
-            // making a custom color scale to color each data point by genre
-            const genreScale = d3.scaleOrdinal()
-                                       .domain(["Musical", "Comedy", "Romantic Comedy", "Documentary", "Adventure", "Horror", "Western", "Action", "Drama", "Thriller/Suspense", "Black Comedy", "Concert/Performance"])
-                                       .range(["#31709B", "#EFA23D", "#AC5D9E", "#569B7E", "#9BC7D2", "#FBD26E", "#D282B4", "#77C8A6", "#B591F3", "#FCE7AB", "#F5A7A8", "#E2BB9D"]);
-
-            // adding circles for data points
-            let circles = chartArea.selectAll("circle").data(data)
-                                   .join("circle")
-                                   .attr("cx", d => monthScale(d['month'])-margin.left + jitter())
-                                   .attr("cy", d => boxScale(d['Box'])+jitter())
-                                   .attr("r", 6)
-                                   .style('fill', d => genreScale(d['genre']))
-                                   .attr('opacity', 0.8);
-
-            // FIX THIS
-            // creating text for axis labels
-            chartArea.append("text")
-                    .attr('class', 'x label')
-                    .attr('text-anchor', 'middle')
-                    .attr('x', '500')
-                    .attr('y', '500')
-                    .attr('text', 'release month');
-
-            const legendRows = {first: 20, second: 50, third: 80};
-            const legendCols = {first: margin.left, second: margin.left + 130, third: margin.left + 290, fourth: margin.left + 460};
-            
-
-            // FIGURE OUT A SCRIPT TO DO THIS
-            // figure legend
-            const legend = d3.select('svg#legendsvg');
-            legend.append("circle").attr("cx", legendCols.first).attr("cy",legendRows.first).attr("r", 6).style("fill", "#31709B");
-            legend.append("text").attr("x", legendCols.first + 20).attr("y", legendRows.first).text("Musical").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
-            legend.append("circle").attr("cx", legendCols.first).attr("cy",legendRows.second).attr("r", 6).style("fill", "#9BC7D2");
-            legend.append("text").attr("x", legendCols.first + 20).attr("y", legendRows.second).text("Adventure").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
-            legend.append("circle").attr("cx", legendCols.first).attr("cy",legendRows.third).attr("r", 6).style("fill", "#B591F3");
-            legend.append("text").attr("x", legendCols.first + 20).attr("y", legendRows.third).text("Drama").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle")
-
-            legend.append("circle").attr("cx", legendCols.second).attr("cy",legendRows.first).attr("r", 6).style("fill", "#EFA23D");
-            legend.append("text").attr("x", legendCols.second + 20).attr("y", legendRows.first).text("Comedy").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
-            legend.append("circle").attr("cx", legendCols.second).attr("cy",legendRows.second).attr("r", 6).style("fill", "#FBD26E");
-            legend.append("text").attr("x", legendCols.second + 20).attr("y", legendRows.second).text("Horror").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
-            legend.append("circle").attr("cx", legendCols.second).attr("cy",legendRows.third).attr("r", 6).style("fill", "#FCE7AB");
-            legend.append("text").attr("x", legendCols.second + 20).attr("y", legendRows.third).text("Thriller/Suspense").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
-
-            legend.append("circle").attr("cx", legendCols.third).attr("cy",legendRows.first).attr("r", 6).style("fill", "#AC5D9E");
-            legend.append("text").attr("x", legendCols.third + 20).attr("y", legendRows.first).text("Romantic Comedy").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
-            legend.append("circle").attr("cx", legendCols.third).attr("cy",legendRows.second).attr("r", 6).style("fill", "#D282B4");
-            legend.append("text").attr("x", legendCols.third + 20).attr("y", legendRows.second).text("Western").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
-            legend.append("circle").attr("cx", legendCols.third).attr("cy",legendRows.third).attr("r", 6).style("fill", "#F5A7A8");
-            legend.append("text").attr("x", legendCols.third + 20).attr("y", legendRows.third).text("Black Comedy").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
-
-            legend.append("circle").attr("cx", legendCols.fourth).attr("cy",legendRows.first).attr("r", 6).style("fill", "#569B7E");
-            legend.append("text").attr("x", legendCols.fourth + 20).attr("y", legendRows.first).text("Documentary").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
-            legend.append("circle").attr("cx", legendCols.fourth).attr("cy",legendRows.second).attr("r", 6).style("fill", "#77C8A6");
-            legend.append("text").attr("x", legendCols.fourth + 20).attr("y", legendRows.second).text("Action").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
-            legend.append("circle").attr("cx", legendCols.fourth).attr("cy",legendRows.third).attr("r", 6).style("fill", "#E2BB9D");
-            legend.append("text").attr("x", legendCols.fourth + 20).attr("y", legendRows.third).text("Concert/Performance").style("font-size", "15px").style("font-family", "avenir").attr("alignment-baseline","middle");
-
-            // // making a temporary figure legend
-            // genreScale.domain().forEach( function (d,i) {
-            //     d3.select("#legend")
-            //     .append("span")
-            //     .text(d)
-            //     .style("color", genreScale(d))
-            // });
-  
-
-                
- 
+        // removing empty values for the box office/budget data set
+        // I removed empty values for the budget, box office, title, and release date
+        data = data.filter((d) => {
+          return d["Budget (float)"] != "";
+        });
+        data = data.filter((d) => {
+          return (
+            d["Box office (float)"] != "" && d["Box office (float)"] != "0"
+          );
+        });
+        data = data.filter((d) => {
+          return d["title"] != "";
+        });
+        data = data.filter((d) => {
+          return d["Release date (datetime)"] != "";
         });
 
-       
+        //trying to remove duplicate titles
+        // got this way of filtering duplicates from https://stackoverflow.com/questions/45037768/d3-filter-duplicates-names-from-csv
+        var titles = [
+          ...new Set(
+            data.map(function (d) {
+              return d.title;
+            })
+          ),
+        ];
+        data = titles.map(function (d) {
+          return data.find(function (e) {
+            return e.title === d;
+          });
+        });
+        //console.log(data);
 
+        // coercing the box office values to numbers, split the string of release dates to get the month as a number
+        data.forEach((d, i) => {
+          d["Box"] = Number(d["Box office (float)"]);
+          d["Release date (datetime)"] =
+            d["Release date (datetime)"].split("-");
+          d["monthNum"] = Number(d["Release date (datetime)"][1]);
+          d["month"] = monthsDict[d["monthNum"]];
+          d["budget"] = Number(d["Budget (float)"]);
+        });
 
-        // // list of genres
-        // let genres = []
-        // genredata.forEach( (d,i) => {
-        //         if (!(genres.includes(d['genre']) )) {
-        //             genres.push(d['genre'])
-        //         }
-        //     // console.log(genres.length)
-        //     })
+        // removing box office values that were unreasonably low (some values were less than 200, which did not make sense)
+        data = data.filter((d) => {
+          return d["Box"] > 200;
+        });
+        console.log(data);
 
-        // jitter helper function
-        function jitter () {
-                return Math.floor(Math.random() * (8) + (-4)) ;
+        // combining two datasets to have one array with the movie title, genre and box office profits
+        // got this way of combining datasets from https://observablehq.com/@d3/d3-group
+        let profitsGenres = d3.index(data, (d) => d.title);
+        console.log(profitsGenres);
+
+        // this 'data' is now a combined dataset to help graph multiple attributes
+        data = data.map(({ title: name, month, Box, budget }) => ({
+          name,
+          month,
+          Box,
+          budget,
+          ...genres.get(name),
+        }));
+        console.log(data);
+        data = data.filter((d) => {
+          return d["genre"] != undefined;
+        });
+        console.log(data);
+
+        // extents and scales
+        const boxExtent = d3.extent(data, (d) => d["Box"]);
+        //using a Log scale so there is a better separation of values and not too many values clustered at the bottom
+        const boxScale = d3
+          .scaleLog()
+          .domain(boxExtent)
+          .range([chartHeight - 20, margin.bottom - 40]);
+
+        // const months = d3.map(data, d => d.month)
+        // console.log(months);
+        const monthScale = d3
+          .scalePoint()
+          .domain([
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ])
+          .range([margin.left, chartWidth])
+          .padding(0.1);
+
+        // making axes and gridlines
+        let leftAxis = d3.axisLeft(boxScale).tickFormat("");
+        let leftGridlines = d3
+          .axisLeft(boxScale)
+          .tickSize(-chartWidth + 55)
+          .tickFormat(d3.format(".2s"));
+
+        labels
+          .append("g")
+          .attr("class", "y gridlines")
+          .attr(
+            "transform",
+            "translate(" + (margin.left - 15) + "," + margin.top + ")"
+          )
+          .call(leftGridlines);
+        labels
+          .append("g")
+          .attr("class", "y axis")
+          .attr(
+            "transform",
+            "translate(" + (margin.left - 10) + "," + margin.top + ")"
+          )
+          .call(leftAxis);
+
+        var ticks = d3.selectAll(".tick text");
+        ticks.each(function (d, i) {
+          if (i % 2 !== 0) d3.select(this).remove();
+        });
+
+        let bottomAxis = d3.axisBottom(monthScale).tickFormat("");
+        let bottomGridlines = d3
+          .axisBottom(monthScale)
+          .tickSize(-chartHeight + 20);
+
+        labels
+          .append("g")
+          .attr("class", "x gridlines")
+          .attr(
+            "transform",
+            "translate(" + 0 + "," + (chartHeight + margin.top + 10) + ")"
+          )
+          .call(bottomGridlines);
+        labels
+          .append("g")
+          .attr("class", "x axis")
+          .attr(
+            "transform",
+            "translate(" + 0 + "," + (chartHeight + margin.top) + ")"
+          )
+          .call(bottomAxis);
+
+        // making a custom color scale to color each data point by genre
+        const genreScale = d3
+          .scaleOrdinal()
+          .domain([
+            "Musical",
+            "Adventure",
+            "Comedy",
+            "Horror",
+            "Romantic Comedy",
+            "Western",
+            "Documentary",
+            "Action",
+            "Drama",
+            "Thriller/Suspense",
+          ])
+          .range([
+            "#31709B",
+            "#EFA23D",
+            " #B591F3",
+            "#FFDE8E",
+            "#AC5D9E",
+            "#F5A7A8",
+            "#9AE2C4",
+            "#D0BAA0",
+            "#569B7E",
+            " #B1E3F0",
+          ]);
+
+        // adding circles for data points
+        let circles = chartArea
+          .selectAll("circle")
+          .data(data)
+          .join("circle")
+          .attr("cx", (d) => monthScale(d["month"]) - margin.left + jitter())
+          .attr("cy", (d) => boxScale(d["Box"]) + jitter())
+          .attr("r", 6)
+          .style("fill", (d) => genreScale(d["genre"]))
+          .attr("opacity", 0.8);
+
+        // creating text for axis labels
+        // x axis label
+        svg1
+          .append("text")
+          .attr("class", "axis-label")
+          .attr("text-anchor", "middle")
+          .attr("x", chartWidth / 2 + 50)
+          .attr("y", height - 20)
+          .text("Movie Release Month");
+
+        // y axis label
+        svg1
+          .append("text")
+          .attr("class", "axis-label")
+          .attr("text-anchor", "middle")
+          .attr("y", 6)
+          .attr("dy", ".75em")
+          .attr("x", -chartHeight / 2)
+          .attr("transform", "rotate(-90)")
+          .text("Box Office Profits (in millions of dollars)");
+
+        svg1
+          .append("rect")
+          .attr("x", 0)
+          .attr("y", 0)
+          .attr("width", 1200)
+          .attr("height", 60)
+          .attr("stroke", "")
+          .style("opacity", 0.2)
+          .attr("fill", "#144CAB");
+        // chart title
+        svg1
+          .append("text")
+          .attr("class", "chart-title")
+          .attr("text-anchor", "middle")
+          .attr("x", chartWidth / 2 + 50)
+          .attr("y", 40)
+          .text("Box Office Profits by Month of Release and Genre");
+
+        const legendRows = { first: 20, second: 50, third: 80 };
+        const legendCols = {
+          first: margin.left,
+          second: margin.left + 150,
+          third: margin.left + 290,
+          fourth: margin.left + 480,
+          fifth: margin.left + 650,
+        };
+
+        // FIGURE OUT A SCRIPT TO DO THIS
+        // figure legend
+        const legend = d3.select("svg#legendsvg");
+
+        legend
+          .append("circle")
+          .attr("cx", legendCols.first)
+          .attr("cy", legendRows.first)
+          .attr("r", 6)
+          .style("fill", "#31709B");
+        legend
+          .append("text")
+          .attr("x", legendCols.first + 20)
+          .attr("y", legendRows.first)
+          .text("Musical")
+          .style("font-size", "15px")
+          .style("font-family", "avenir")
+          .attr("alignment-baseline", "middle");
+        legend
+          .append("circle")
+          .attr("cx", legendCols.first)
+          .attr("cy", legendRows.second)
+          .attr("r", 6)
+          .style("fill", "#EFA23D");
+        legend
+          .append("text")
+          .attr("x", legendCols.first + 20)
+          .attr("y", legendRows.second)
+          .text("Adventure")
+          .style("font-size", "15px")
+          .style("font-family", "avenir")
+          .attr("alignment-baseline", "middle");
+
+        legend
+          .append("circle")
+          .attr("cx", legendCols.second)
+          .attr("cy", legendRows.first)
+          .attr("r", 6)
+          .style("fill", "#B591F3");
+        legend
+          .append("text")
+          .attr("x", legendCols.second + 20)
+          .attr("y", legendRows.first)
+          .text("Comedy")
+          .style("font-size", "15px")
+          .style("font-family", "avenir")
+          .attr("alignment-baseline", "middle");
+        legend
+          .append("circle")
+          .attr("cx", legendCols.second)
+          .attr("cy", legendRows.second)
+          .attr("r", 6)
+          .style("fill", "#FFDE8E");
+        legend
+          .append("text")
+          .attr("x", legendCols.second + 20)
+          .attr("y", legendRows.second)
+          .text("Horror")
+          .style("font-size", "15px")
+          .style("font-family", "avenir")
+          .attr("alignment-baseline", "middle");
+
+        legend
+          .append("circle")
+          .attr("cx", legendCols.third)
+          .attr("cy", legendRows.first)
+          .attr("r", 6)
+          .style("fill", "#AC5D9E");
+        legend
+          .append("text")
+          .attr("x", legendCols.third + 20)
+          .attr("y", legendRows.first)
+          .text("Romantic Comedy")
+          .style("font-size", "15px")
+          .style("font-family", "avenir")
+          .attr("alignment-baseline", "middle");
+        legend
+          .append("circle")
+          .attr("cx", legendCols.third)
+          .attr("cy", legendRows.second)
+          .attr("r", 6)
+          .style("fill", "#F5A7A8");
+        legend
+          .append("text")
+          .attr("x", legendCols.third + 20)
+          .attr("y", legendRows.second)
+          .text("Western")
+          .style("font-size", "15px")
+          .style("font-family", "avenir")
+          .attr("alignment-baseline", "middle");
+
+        legend
+          .append("circle")
+          .attr("cx", legendCols.fourth)
+          .attr("cy", legendRows.first)
+          .attr("r", 6)
+          .style("fill", "#9AE2C4");
+        legend
+          .append("text")
+          .attr("x", legendCols.fourth + 20)
+          .attr("y", legendRows.first)
+          .text("Documentary")
+          .style("font-size", "15px")
+          .style("font-family", "avenir")
+          .attr("alignment-baseline", "middle");
+        legend
+          .append("circle")
+          .attr("cx", legendCols.fourth)
+          .attr("cy", legendRows.second)
+          .attr("r", 6)
+          .style("fill", "#D0BAA0");
+        legend
+          .append("text")
+          .attr("x", legendCols.fourth + 20)
+          .attr("y", legendRows.second)
+          .text("Action")
+          .style("font-size", "15px")
+          .style("font-family", "avenir")
+          .attr("alignment-baseline", "middle");
+
+        legend
+          .append("circle")
+          .attr("cx", legendCols.fifth)
+          .attr("cy", legendRows.first)
+          .attr("r", 6)
+          .style("fill", "#569B7E");
+        legend
+          .append("text")
+          .attr("x", legendCols.fifth + 20)
+          .attr("y", legendRows.first)
+          .text("Drama")
+          .style("font-size", "15px")
+          .style("font-family", "avenir")
+          .attr("alignment-baseline", "middle");
+        legend
+          .append("circle")
+          .attr("cx", legendCols.fifth)
+          .attr("cy", legendRows.second)
+          .attr("r", 6)
+          .style("fill", "#B1E3F0");
+        legend
+          .append("text")
+          .attr("x", legendCols.fifth + 20)
+          .attr("y", legendRows.second)
+          .text("Thriller/Suspense")
+          .style("font-size", "15px")
+          .style("font-family", "avenir")
+          .attr("alignment-baseline", "middle");
+
+        // graph 2
+
+        // create an array of object [{genre: total_gross}]
+        let genreTwo = [];
+        data.forEach((d, i) => {
+          let total = 0;
+          let budget = 0;
+          data.forEach((f, i) => {
+            if (d["genre"] == f["genre"]) {
+              total = total + f["total_gross"];
+              budget = budget + f["budget"];
             }
+          });
+          let incomeLabel = Math.floor(total / 1000000);
+          let budgetLabel = Math.floor(budget / 1000000);
+          // let profit = Math.floor( (total - budget) / 1000000); "profit": profit,
+          let percentage = Math.floor((total / budget) * 100);
+          genreTwo.push({
+            name: d["genre"],
+            total: total,
+            budget: budget,
+            incomeLabel: incomeLabel,
+            budgetLabel: budgetLabel,
+            percentage: percentage,
+          });
+        });
+        console.log(genreTwo);
+
+        function unique(genreTwo, prop) {
+          var uniqueArray = [];
+          var check = {};
+          for (var i in genreTwo) {
+            check[genreTwo[i][prop]] = genreTwo[i];
+          }
+          for (i in check) {
+            uniqueArray.push(check[i]);
+          }
+          return uniqueArray;
+        }
+        var uniqueGenre = unique(genreTwo, "name");
+
+        uniqueGenre.sort((a, b) => d3.descending(a["total"], b["total"]));
+        console.log(uniqueGenre);
+
+        let max = 0;
+        for (let i = 0; i < uniqueGenre.length; i++) {
+          let check = uniqueGenre[i].total;
+          max = Math.max(uniqueGenre[i].total, max);
+        }
+        // console.log(max);
+        let maxBudget = 0;
+        for (let i = 0; i < uniqueGenre.length; i++) {
+          let check = uniqueGenre[i].budget;
+          maxBudget = Math.max(uniqueGenre[i].budget, maxBudget);
+        }
+        // console.log(maxBox);
+
+        // title of the graph
+        canvaTwo
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "hanging")
+          .attr("font-size", "30px")
+          .attr("x", widthTwo / 2)
+          .attr("y", 25)
+          .attr("font-family", "Avenir")
+          .text("Genre vs. Total Gross Income & Budget");
+        canvaTwo
+          .append("rect")
+          .attr("x", 0)
+          .attr("y", 0)
+          .attr("width", 1200)
+          .attr("height", 80)
+          .attr("stroke", "")
+          .attr("class", "titleBackground")
+          .style("opacity", 0.2)
+          .attr("fill", "#144CAB");
+
+        const moneyScale = d3
+          .scaleLog()
+          .domain([1, max])
+          .range([0, chartWidthTwo]);
+
+        let color = [
+          "#EFA23D",
+          "#B591F3",
+          "#569B7E",
+          "#31709B",
+          "#AC5D9E",
+          "#9AE2C4",
+          "#F5A7A8",
+          "#D0BAA0",
+          "#B1E3F0",
+          "#FFDE8E",
+        ];
+
+        // draw the bars
+        let position = 0;
+        uniqueGenre.forEach((d, i) => {
+          chartAreaTwo
+            .append("rect")
+            .attr("x", 10)
+            .attr("y", position + 24)
+            .attr("width", moneyScale(d["budget"]))
+            .attr("height", 24)
+            .attr("stroke", "")
+            .attr("fill", "#ececec");
+          chartAreaTwo
+            .append("circle")
+            .attr("cx", moneyScale(d["budget"]) + 10)
+            .attr("cy", position + 36)
+            .attr("r", 12)
+            .style("fill", "#ececec");
+          chartAreaTwo
+            .append("text")
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .attr("font-size", "10px")
+            .attr("x", moneyScale(d["budget"]))
+            .attr("y", position + 36)
+            .attr("font-family", "Avenir")
+            .text(uniqueGenre[i].budgetLabel + "M");
+
+          chartAreaTwo
+            .append("rect")
+            .attr("x", 10)
+            .attr("y", position)
+            .attr("width", moneyScale(d["total"]))
+            .attr("height", 24)
+            .attr("stroke", "")
+            .attr("fill", color[i]);
+          chartAreaTwo
+            .append("circle")
+            .attr("cx", moneyScale(d["total"]) + 10)
+            .attr("cy", position + 12)
+            .attr("r", 12)
+            .style("fill", color[i]);
+          chartAreaTwo
+            .append("text")
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .attr("font-size", "10px")
+            .attr("x", moneyScale(d["total"]))
+            .attr("y", position + 12)
+            .attr("font-family", "Avenir")
+            .attr("stroke", "white")
+            .text(uniqueGenre[i].incomeLabel + "M");
+
+          if (moneyScale(d["total"]) < moneyScale(d["budget"])) {
+            chartAreaTwo
+              .append("circle")
+              .attr("cx", moneyScale(d["budget"]) + 70)
+              .attr("cy", position + 24)
+              .attr("r", 16)
+              .style("fill", "white")
+              .style("stroke-width", 0.8)
+              .style("stroke", "#4f4f4f");
+            chartAreaTwo
+              .append("text")
+              .attr("text-anchor", "middle")
+              .attr("dominant-baseline", "middle")
+              .attr("font-size", "10px")
+              .attr("x", moneyScale(d["budget"]) + 70)
+              .attr("y", position + 24)
+              .attr("font-family", "Avenir")
+              .text(uniqueGenre[i].percentage + "%");
+            chartAreaTwo
+              .append("line")
+              .attr("x1", 0)
+              .attr("x2", moneyScale(d["budget"]) + 54)
+              .attr("y1", position + 24)
+              .attr("y2", position + 24)
+              .style("stroke", "#D3D3D3")
+              .style("stroke-width", 0.8);
+          } else {
+            chartAreaTwo
+              .append("circle")
+              .attr("cx", moneyScale(d["total"]) + 70)
+              .attr("cy", position + 24)
+              .attr("r", 16)
+              .style("fill", "white")
+              .style("stroke-width", 0.8)
+              .style("stroke", "#4f4f4f");
+            chartAreaTwo
+              .append("text")
+              .attr("text-anchor", "middle")
+              .attr("dominant-baseline", "middle")
+              .attr("font-size", "10px")
+              .attr("x", moneyScale(d["total"]) + 70)
+              .attr("y", position + 24)
+              .attr("font-family", "Avenir")
+              .text(uniqueGenre[i].percentage + "%");
+            chartAreaTwo
+              .append("line")
+              .attr("x1", 0)
+              .attr("x2", moneyScale(d["total"]) + 54)
+              .attr("y1", position + 24)
+              .attr("y2", position + 24)
+              .style("stroke", "#D3D3D3")
+              .style("stroke-width", 0.8);
+          }
+
+          position += 85;
+        });
+
+        // draw the rect to cover the extra part of circles
+        canvaTwo
+          .append("rect")
+          .attr("x", 0)
+          .attr("y", 80)
+          .attr("width", marginTwo.left + 10)
+          .attr("height", heightTwo)
+          .attr("stroke", "")
+          .attr("fill", "white");
+
+        // draw the y axis
+        canvaTwo
+          .append("line")
+          .attr("x1", marginTwo.left + 10)
+          .attr("x2", marginTwo.left + 10)
+          .attr("y1", marginTwo.top)
+          .attr("y2", position + 162)
+          .style("stroke", "#D3D3D3")
+          .style("stroke-width", 3);
+
+        // legend
+        canvaTwo
+          .append("rect")
+          .attr("x", 750)
+          .attr("y", 106)
+          .attr("width", 200)
+          .attr("height", 24)
+          .attr("stroke", "")
+          .attr("fill", "#979797");
+        canvaTwo
+          .append("circle")
+          .attr("cx", 950)
+          .attr("cy", 118)
+          .attr("r", 12)
+          .style("fill", "#979797");
+        canvaTwo
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle")
+          .attr("font-size", "10px")
+          .attr("x", 905)
+          .attr("y", 118)
+          .attr("font-family", "Avenir")
+          .attr("stroke", "white")
+          .text("Total gross income");
+
+        canvaTwo
+          .append("rect")
+          .attr("x", 750)
+          .attr("y", 130)
+          .attr("width", 150)
+          .attr("height", 24)
+          .attr("stroke", "")
+          .attr("fill", "#ececec");
+        canvaTwo
+          .append("circle")
+          .attr("cx", 900)
+          .attr("cy", 142)
+          .attr("r", 12)
+          .style("fill", "#ececec");
+        canvaTwo
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle")
+          .attr("font-size", "10px")
+          .attr("x", 880)
+          .attr("y", 142)
+          .attr("font-family", "Avenir")
+          .text("Budget");
+
+        canvaTwo
+          .append("circle")
+          .attr("cx", 1020)
+          .attr("cy", 130)
+          .attr("r", 16)
+          .style("fill", "white")
+          .style("stroke-width", 0.8)
+          .style("stroke", "#4f4f4f");
+        canvaTwo
+          .append("line")
+          .attr("x1", 750)
+          .attr("x2", 1004)
+          .attr("y1", 130)
+          .attr("y2", 130)
+          .style("stroke", "#D3D3D3")
+          .style("stroke-width", 0.8);
+        canvaTwo
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle")
+          .attr("font-size", "10px")
+          .attr("x", 1020)
+          .attr("y", 130)
+          .attr("font-family", "Avenir")
+          .text("x%");
+
+        canvaTwo
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle")
+          .attr("font-size", "10px")
+          .attr("x", 1100)
+          .attr("y", 120)
+          .attr("font-family", "Avenir")
+          .text("total groass income");
+        canvaTwo
+          .append("line")
+          .attr("x1", 1050)
+          .attr("x2", 1150)
+          .attr("y1", 130)
+          .attr("y2", 130)
+          .style("stroke", "black")
+          .style("stroke-width", 0.8);
+        canvaTwo
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle")
+          .attr("font-size", "10px")
+          .attr("x", 1100)
+          .attr("y", 140)
+          .attr("font-family", "Avenir")
+          .text("budget");
+        canvaTwo
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle")
+          .attr("font-size", "10px")
+          .attr("x", 1170)
+          .attr("y", 130)
+          .attr("font-family", "Avenir")
+          .text(" * 100");
+
+        // genre on the y asix
+        let textPosition = marginTwo.top + 16;
+        uniqueGenre.forEach((d, i) => {
+          canvaTwo
+            .append("text")
+            .attr("text-anchor", "end")
+            .attr("dominant-baseline", "middle")
+            .attr("font-size", "20px")
+            .attr("x", marginTwo.left)
+            .attr("y", textPosition + 13)
+            .attr("font-family", "Avenir")
+            .text(uniqueGenre[i].name);
+          textPosition += 85;
+        });
+      });
+
+      function jitter() {
+        return Math.floor(Math.random() * 8 + -4);
+      }
     </script>
-
-    
-
-<!-- QUESTIONS: use log scale or linear scale? use jitter function? -->
-</body>
+  </body>
 </html>
